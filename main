@@ -1,0 +1,651 @@
+#include<stdio.h>
+#include<conio.h>
+#include<Windows.h>
+#include<string.h>
+
+int i = 0;
+int lines = 0;
+char Files[3][8] = { "WBZ.txt","WSL.txt","WAR.txt" };
+char wareHouse[3][4] = { "WBZ","WSL","WAR" };
+
+
+
+//line counter functionvoid
+void lineCounter(const char* fileName)
+{
+	lines = 0;
+	char ch;
+	// count the number of lines in the file called fileName                                    
+	FILE* fp;
+	fp = fopen(fileName, "a");
+	fclose(fp);
+	if ((fp = fopen(fileName, "r")) != NULL) {
+		ch = getc(fp);
+		while (ch != EOF)
+		{
+			if (ch == '\n')
+			{
+				lines++;
+			}
+			ch = getc(fp);
+		}
+		fclose(fp);
+	}
+	else
+		lines = 0;
+}
+struct product //main strucuture that is used throughout most of the function
+{
+	char id[30], wareHouse[30], section[30], supplier[30], parts[30], supplierValid[30], idValid[30], phoneNum[30], phoneNumValid[30];
+	int quantity, quantityValid, choice, choice1;
+
+};
+void fileSort(const char* fileName) // file sorting function that will sort the file according to ascending order 
+{
+	struct product sort[100]; // declaration of structure array 
+	int i = 0; // declaration of variable that will be used 
+	int e = 0; 
+	int tempnum = 0;
+	FILE* fPointer0; // file pointer for opening file 
+	char temp[30];
+
+	// validation of file 
+	if ((fPointer0 = fopen(fileName, "r")) != NULL) {
+
+		// line counter function is called to determine total line in the text file 
+		lineCounter(fileName);
+
+		// two for loop is use to compare the first and seocnd line, second and third line etc
+		for (e = 0; e < lines; e++) {
+			fscanf(fPointer0, "%s%d", &sort[e].id, &sort[e].quantity);
+		}
+		for (i = 0; i < lines; i++)
+		{
+			for (e = i + 1; e < lines; e++)
+			{
+				// if the second line has higher ASCII than first line it will then be moved up one level in the structure array
+				if (strcmp(sort[i].id, sort[e].id) > 0)
+				{
+					strcpy(temp, sort[i].id);
+					strcpy(sort[i].id, sort[e].id);
+					strcpy(sort[e].id, temp);
+					tempnum = sort[i].quantity;
+					sort[i].quantity = sort[e].quantity;
+					sort[e].quantity = tempnum;
+				}
+			}
+		}
+		fclose(fPointer0);
+		fPointer0 = fopen(fileName, "w");
+
+		// printing out all the data back to file after sorting in ascending order
+		for (i = 0; i < lines; i++) {
+			fprintf(fPointer0, "%-10s\t%d\n", sort[i].id, sort[i].quantity);
+		}
+		fclose(fPointer0);
+	}
+}
+void supplyStock() {
+	struct product supply; // declaration of a structure array and some variables
+	void main();
+	char fileName[30];
+	char fileName1[30];
+	int a = 0; 
+	int idExist = 0;
+	int i = 0;
+	printf("\n\nEnter your supplier name:"); // prompt for suppliers' name
+	gets_s(supply.supplier); while (getchar() != '\n');
+	printf("\nEnter your contact number:"); // prompt for suppliers' contact number
+	gets_s(supply.phoneNum); while (getchar() != '\n');
+
+	// prompt for warehouse ID input from user to choose which warehouse they want to give supply to 
+	while (true) { 
+		printf("\n\t\t1. Blaze[WBZ]\n\t\t2. Silk [WSL]\n\t\t3. Armer[WAR]\nEnter the warehouse ID you are going to supply[Ex:WBZ]:");
+		gets_s(supply.wareHouse);
+		if (strcmp(supply.wareHouse, "WBZ") == 0 || strcmp(supply.wareHouse, "WSL") == 0 || strcmp(supply.wareHouse, "WAR") == 0)
+			break;
+		else
+			printf("Invalid input!\n");
+	}
+
+	// prompt for section ID input from user to choose which section they want to give supply to 
+	while (true) {
+
+		// print out the selection and parts numbwer according to each part 
+		printf("\n\t\t1.Engine Section[ES]\n\t\t2.Body Work[BS]\n\t\t3.Air-con Section[AS]\nEnter the section you are going to supply[Ex:ES]:");
+		gets_s(supply.section); while (getchar() != '\n');
+		if (strcmp(supply.section, "ES") == 0) {
+			printf("Enter which parts you are going to supply:\n\t[01]. Piston\n\t[02]. Crank Shaft\n\t[03]. Spark Plugs\n\t[04]. Distributor\n\t[05]. Water Pump\n");
+			printf("Enter your the number according to the parts you are going to supply [Ex:01]:");
+			gets_s(supply.parts); while (getchar() != '\n');
+			break;
+		}
+		else if (strcmp(supply.section, "BS") == 0) {
+			printf("Enter which parts you are going to supply:\n\t[06]. Dash\n\t[07]. Roof Panel\n\t[08]. Valance\n\t[09]. Screen Pillar\n\t[10]. Body Quarter\n");
+			printf("Enter your the number according to the parts you are going to supply [Ex:05]:");
+			gets_s(supply.parts); while (getchar() != '\n');
+			break;
+		}
+		else if (strcmp(supply.section, "AS") == 0) {
+			printf("Enter which parts you are going to supply:\n\t[11]. A/C Compressor\n\t[12]. Blower Motor\n\t[13]. Cooling Coil\n\t[14]. Fan Motor\n\t[15]. Condenser\n");
+			printf("Enter your the number according to the parts you are going to supply [Ex:11]:");
+			gets_s(supply.parts); while (getchar() != '\n');
+			break;
+		}
+		else
+			printf("Invalid input!\n");
+	}
+
+	// formation of parts ID is combination of warehouse ID, section ID, and parts number
+
+	strcpy_s(supply.id, supply.wareHouse);
+	strcat_s(supply.id, supply.section);
+	strcat_s(supply.id, supply.parts); //formation of parts ID
+
+
+
+	// line function is called to count the line count in supplier.txt
+	lineCounter("supplier.txt");
+	FILE* fPointer0;
+
+	// open supplier.txt for validation of id and parts to ensure one parts ID is supplied by one supplier only 
+	if ((fPointer0 = fopen("supplier.txt", "r")) != NULL){
+	for (i = 0; i <= lines; ++i) {
+		// for loop and scanf to retrieve data from supplier.txt
+		fscanf(fPointer0, "%s %s %s %d", &supply.supplierValid, &supply.idValid, &supply.phoneNumValid, &supply.quantityValid);
+
+		// if there is match in id and suppluier name, the loop will be break and continue running the next part
+		if (strcmp(supply.id, supply.idValid) == 0) {
+			if (strcmp(supply.supplier, supply.supplierValid) == 0) {
+				idExist = 1;
+				break;
+			}
+			// if theres match in id but no match in supplier name, the program will show the parts ID is supplied by the orginal supplier
+			else
+				printf("The part with Parts ID: [%s] is being supplied by %s\n", supply.id, supply.supplierValid);
+				printf("Press enter to go back to menu.\n");
+				_getch();
+				main();
+		}
+	}
+	fclose(fPointer0);
+	}
+
+	// Prompt user for the quantity they are going to give 
+	printf("Enter the quantity you are supplying:");
+	scanf_s("%d", &supply.quantity); while (getchar() != '\n');
+
+	// declaration of another structure array that will be used for data storing 
+	struct product data_storing[100];
+
+	// strcpy is used to combine warehouse name and ".txt"
+	strcpy_s(fileName, supply.wareHouse);
+	strcat_s(fileName, ".txt");
+
+
+	// line counter function is called to count the line of the fileName1 text file
+	lineCounter(fileName);
+
+
+	FILE* fPointer1;
+	// fileName1 is opened for reading for the validation of existence fo parts ID in warehouse text file
+	if ((fPointer1 = fopen(fileName, "r")) != NULL) {
+		// if the parts ID is existed before, the program will scan the data from text file and add the quantity the user going to supply and the existing stock according to parts ID
+		if (idExist == 1) {
+			while (!feof(fPointer1))
+			{
+			// scan data from text file and add up the quantity that have the same parts ID
+				fscanf(fPointer1, "%s %d", &data_storing[i].id, &data_storing[i].quantity);
+				if (strcmp(supply.id, data_storing[i].id) == 0)
+				{
+					data_storing[i].quantity += supply.quantity;
+				}
+				i++;
+			}
+			fclose(fPointer1);
+
+			// file is closed and opened for rewritting data after adding the quantity 
+			fPointer1 = fopen(fileName, "w");
+			for (i = 0; i < lines; i++)
+			{
+				fprintf(fPointer1, "%-10s\t%d\n", data_storing[i].id, data_storing[i].quantity);
+			}
+			fclose(fPointer1);
+		}
+
+		// else if the parts ID that is going to be supplied is new, the program will just append the data into the warehouse text file 
+		else 
+		{
+			fclose(fPointer1);
+			fPointer1 = fopen(fileName, "a");
+			fprintf(fPointer1, "%-10s\t%d\n", supply.id, supply.quantity);
+			fclose(fPointer1);
+		}
+	}
+
+	// the supply record also will be append into the supplier.txt 
+	FILE* fPointer2;
+	fPointer2 = fopen("supplier.txt", "a");
+	fprintf(fPointer2, "%-10s\t%-10s\t%-10s\t%d\n", supply.supplier, supply.id, supply.phoneNum, supply.quantity);
+	fclose(fPointer2);
+
+	// fileSort function is called to arrange the text file according to ascending order 
+	fileSort(fileName);
+
+	printf("Supply is recorded!");
+
+	// let user to go back to menu page again 
+	printf("\nPress enter to go back to menu.\n");
+	_getch();
+	main();
+
+}
+
+void takeStock() { // this function is used when user wants to take stock from warehouse 
+		void main();			// declaration of variables that will be used throughout the whole function 
+		char fileName[30];
+		char fileName1[30];
+		struct product take;
+		int a = 0;
+		int i = 0;
+		int flag = 0;
+		int choice = 0;
+
+		// prompt user for name 
+		printf("\nEnter your name:");
+		gets_s(take.supplier); while (getchar() != '\n');
+
+		// prompt user for phone number 
+		printf("\n\nEnter your contact number:");
+		gets_s(take.phoneNum); while (getchar() != '\n');
+
+		// prompt user for warehouse ID they are going to take parts from 
+		while (true) {
+			printf("\n\t\t1. Blaze[WBZ]\n\t\t2. Silk[WSL]\n\t\t3. Armer[WAR]\nEnter the warehouse ID you are going to take parts from[Ex:WBZ]:");
+			gets_s(take.wareHouse);
+			if (strcmp(take.wareHouse, "WBZ") == 0 || strcmp(take.wareHouse, "WSL") == 0 || strcmp(take.wareHouse, "WAR") == 0)
+				break;
+			else
+				printf("Invalid input!\n");
+		}
+
+		// display of data from warehouse file according to which warehouse user chose
+		printf("These are the part ID(s) that is available:\n");
+		FILE* fPointer0;
+		strcpy_s(fileName1, take.wareHouse);
+		strcat_s(fileName1, ".txt");
+
+
+		// line counter fucntion is called to count line count in warehouse file 
+		lineCounter(fileName1);
+
+		// declaration of another structure array that will be used for data display and rewrite 
+		struct product data[100];
+
+		// open warehouse file for read and scan the data inside 
+		fPointer0 = fopen(fileName1, "r");
+
+
+		// for loop that is used to scan and print the data inside, the loop will be according to the line count in warehouse file 
+		for (i = 0; i < lines; i++) {
+			fscanf(fPointer0, "%s %d", &data[i].id, &data[i].quantity);
+			printf("\t\t|Parts ID:%s\tQuantity:%2d|\n", data[i].id, data[i].quantity);
+		}
+		fclose(fPointer0);
+
+		// prompt user for parts ID that they are going to take supply
+		printf("Enter the part ID for the part that you want to take:");
+		scanf("%s", &take.idValid);
+
+		// for loop is used to loop scan and print the warehouse file where needed 
+		for (i = 0; i < lines; i++) {
+
+			// validation of parts ID that user entered
+			if (strcmp(data[i].id, take.idValid) == 0) {
+
+				// flag is set to 1 if the parts ID exist in the warehouse file
+				flag = 1;
+
+				// prompt user for quantity there are going to take 
+				printf("Enter the quantity for the part that you want to take\n[Total stock available:%d]:", data[i].quantity);
+				scanf("%d", &take.quantity);
+
+				//validation of quantity that user entered, if the number that user entered is higher than the curren stock warehouse, the program will prompt user to either take all or cancel action
+				if (data[i].quantity < take.quantity) {
+					printf("The current stock [%d] for %s is lower than the stock you need. Do you want to:\n\t[1]Take all\n\t[2]Cancel Action\nEnter your option:", data[i].quantity, data[i].id);
+					scanf("%d", &choice);
+
+					// when user chose to take all, the program will assign all remaining stock to user and appened the record in supplier.txt
+					if (choice == 1) {
+						printf("\nYou have taken a total of %d for the Part ID[%s].\nRemaining stock for [%s]:0", take.quantity, data[i].id, data[i].id);
+						printf("\nQuantity deducted and recorded.\n");
+						FILE* fPointer2;
+						fPointer2 = fopen("supplier.txt", "a");
+						fprintf(fPointer2, "%-10s\t%-10s\t%-10s\t-%d\n", take.supplier, data[i].id, take.phoneNum, take.quantity);
+						fclose(fPointer2);
+						data[i].quantity = 0;
+						break;
+					}
+
+					// when user chose to cancel action, program will bring user back to main menu after pressing enter
+					else if (choice == 2) {
+						take.quantity = 0;
+						printf("\nYou have cancelled the action due to insufficient stock in warehouse, sorry for any inconvenience caused.\n");
+						printf("\nPress enter to go back to menu.\n");
+						_getch();
+						main();
+					}
+				}
+				// else if the user enter a number smaller than current stock, the program will deduct the number from current stock and append the record in supplier.txt
+				else {
+					data[i].quantity -= take.quantity;
+					printf("You have taken a total of %d for the Part ID[%s].\nRemaining stock for [%s]:%d", take.quantity, data[i].id, data[i].id, data[i].quantity);
+					printf("\nQuantity deducted and recorded.");
+					FILE* fPointer2;
+					fPointer2 = fopen("supplier.txt", "a");
+					fprintf(fPointer2, "%-10s\t%-10s\t%-10s\t-%d\n", take.supplier, data[i].id, take.phoneNum, take.quantity);
+					fclose(fPointer2);
+				}
+			}
+		
+		}
+		// if flag = 0 which means the parts ID doesnt exist in the warehouse file, program will show invalid part ID
+		if (flag == 0) {
+			printf("Inavlid part ID");
+		}
+
+
+		// after all the data has been collect and deduct, the program will rewrite the data into the text file accordingly
+		FILE* fPointer1;
+		fPointer1 = fopen(fileName1, "w");
+		for (i = 0; i < lines; i++) {
+			fprintf(fPointer1, "%-10s\t%d\n", data[i].id, data[i].quantity);
+		}
+		fclose(fPointer1);
+
+		// program will prompt user to press enter to go back to main menu 
+		printf("\nPress enter to go back to menu.\n");
+		_getch();
+		main();
+
+
+}
+void displayQuantity() { // this function is called when user chose option 3 in main menu 
+	void main();         //declaration of variables and structure array that will be used throughout the whole function 
+	struct product display;
+	struct product dataDis[100];
+	char fileName[30];
+	char fileName1[30];
+	int i = 0;
+	int a = 0;
+
+	// prompt user for input to let user choose to display all warehouse's or specific warehouse's stock
+	 do
+	 {
+		 printf("Do you want to:\n\t1. Display all stock[All warehouse]\n\t2. Display stock for specific warehouse\n\t3. Exit\nEnter the option:");
+		 scanf_s("%d", &display.choice); while (getchar() != '\n');
+
+		 //  if the user chose 1, the program will print out all available stock in all warehouse 
+		 if (display.choice == 1) {
+			 FILE* fPointer0;
+
+			 // for loop is used to print out all data
+			 for (a = 0; a < 3; a++) {
+				 lineCounter(Files[a]);
+				 if ((fPointer0 = fopen(Files[a], "r")) != NULL) {
+					 printf("\n\t\t\t\t------------------\n\t\t\t\t\t%s\n\t\t\t\t------------------\n", wareHouse[a]);
+
+					 // validation for if theres no data in warehouse file, the program will display as shown below
+					 if (lines == 0) {
+						 printf("\t\tX X X There is no parts in this warehouse X X X\n");
+					 }
+					 else {
+						 for (i = 0; i < lines; i++) {
+							 fscanf(fPointer0, "%s %d", &dataDis[i].id, &dataDis[i].quantity);
+							 printf("\t\tParts ID:%s\t\tQuantity:%d\n", dataDis[i].id, dataDis[i].quantity);
+						 }
+					 }
+				 }
+			 }
+		 }
+
+		 // if the user chose 2, the program will then prompt user for warehouse ID there are going check stock 
+		 else if (display.choice == 2) {
+			 while (true) {
+				 printf("Enter the warehouse ID that you want to check stock [WBZ,WSL,WAR]:\n");
+				 gets_s(display.wareHouse); while (getchar() != '\n');
+				 
+				 // validation of input 
+				 if (strcmp(display.wareHouse, "WBZ") == 0 || strcmp(display.wareHouse, "WSL") == 0 || strcmp(display.wareHouse, "WAR") == 0) {
+
+					 // prompt user for them to choose whether to display all stock in warehouse file or those with less than 10 stock
+					 printf("Do you want to:\n\t1. Display all parts and quantity\n\t2. Display parts less than 10\nEnter the option:");
+					 scanf_s("%d", &display.choice1); while (getchar() != '\n');
+
+					 // if user chose 1, the program will print out all the stock in chosen warehoue file 
+					 if (display.choice1 == 1) {
+						 FILE* fPointer0;
+
+						 // strcpy is used to combine warehouse ID and ".txt"
+						 strcpy_s(fileName1, display.wareHouse);
+						 strcat_s(fileName1, ".txt");
+
+
+						 // lineCounter function is called to count the line count in warehouse file 
+						 lineCounter(fileName1);
+						 printf("\n\t\t\t\t------------------\n\t\t\t\t\t%s\n\t\t\t\t------------------\n", display.wareHouse);
+						 fPointer0 = fopen(fileName1, "r");
+						 // if theres no line / 0 line in warehouse file the progarm will print as shown below 
+						 if (lines == 0) {
+							 printf("\t\tX X X There is no parts in this warehouse X X X\n");
+						 }
+
+						 // if theres data in warehouse file the program will proceed to scan and print out data 
+						 else {
+							 for (i = 0; i < lines; i++) {
+								 fscanf(fPointer0, "%s %d", &dataDis[i].id, &dataDis[i].quantity);
+								 printf("\t\tParts ID:%s\t\tQuantity:%d\n", dataDis[i].id, dataDis[i].quantity);
+							 }
+						 }
+						 printf("\n\nPress enter to go back to menu.\n");
+						 _getch();
+						 main();
+
+					 }
+
+					 // if the user chose 2, the program will print all parts ID with less than 10 remaining qunatity
+					 else if (display.choice1 == 2) {
+						 FILE* fPointer0;
+						 strcpy_s(fileName1, display.wareHouse);
+						 strcat_s(fileName1, ".txt");
+						 fPointer0 = fopen(fileName1, "r");
+						 lineCounter(fileName1);
+						 printf("\n\t\t\t\t------------------\n\t\t\t\t\t%s\n\t\t\t\t------------------\n", display.wareHouse);
+						 if (lines == 0) {
+							 printf("\t\tX X X There is no parts in this warehouse X X X\n");
+						 }
+						 else {
+							 for (i = 0; i < lines; i++) {
+								 fscanf(fPointer0, "%s %d", &dataDis[i].id, &dataDis[i].quantity);
+								 if (dataDis[i].quantity < 10) {
+									 printf("\t\tParts ID:%s\t\tQuantity:%d\n", dataDis[i].id, dataDis[i].quantity);
+								 }
+							 }
+						 }
+						 printf("Press enter to go back to menu.\n");
+						 _getch();
+						 main();
+					 }
+				 }
+			 }
+
+		 }
+
+		 // if the user chose 3, the program will proceed to main menu 
+		 else if (display.choice == 3) {
+			 main();
+		 }
+
+	 } while (display.choice != 4);
+}
+void searchPart() // this function is called when user chose 4 in main menu, which is searching parts record  
+{
+	void main(); // declaration of varirables that will be used throughout the whole fucntion 
+	int a = 0;
+	int i = 0;
+	int flag = 0;
+	FILE* fPointer0;
+	struct product search; // declaration of struct array 
+
+	// prompt user for option to choose between searching for parts record, supplier details, or exit the function
+	printf("\n\t\t1.Part's record\n\t\t2.Supplier details of the parts\n\t\t3.Exit\nEnter your option:\n");
+	scanf_s("%d", &search.choice); while (getchar() != '\n');
+
+	// if user chose 1, the program will prompt user for parts ID that user want to search for 
+	if (search.choice == 1) {
+		printf("Enter the part ID you want search for:");
+		gets_s(search.id); while (getchar() != '\n');
+
+		// lineCounter funciton is called to count the line count in supplier.txt
+		lineCounter("supplier.txt");
+
+		//the program will then proceed to print out record of supply and acquire stock of the parts ID using for loop and strcmp
+		if ((fPointer0 = fopen("supplier.txt", "r")) != NULL) {
+			printf("The following is the record for the parts ID [%s]:\n", search.id);
+			for (i = 0; i < lines; i++) {
+				fscanf(fPointer0, "%s%s%s%d", &search.supplier, &search.idValid, &search.phoneNum, &search.quantity);
+				if (strcmp(search.id, search.idValid) == 0) {
+					flag = 1;
+					if (search.quantity > 0) {
+						printf("Name:%-10s\tSupplied:%-10d\n", search.supplier, search.quantity);
+					}
+					else
+					{
+						printf("Name:%-10s\tAcquired:%-10d\n", search.supplier, abs(search.quantity));
+
+					}
+				}
+			}
+			// if flag is 0 at this point, means that the parts ID entered does not exist in supplier.txt 
+			if (flag == 0) {
+				printf("No record of this Part ID is available");
+				_getch();
+			}
+		}
+		printf("Press enter to go back to menu.\n");
+		_getch();
+	}
+	// if the user chose 2, which is the suppplier details of that parts ID, the program will then prompt for parts ID and print out the name and contact number of the supplier 
+	else if (search.choice == 2) {
+		printf("\nEnter the part ID you want search for:\n");
+		gets_s(search.id); while (getchar() != '\n');
+		lineCounter("supplier.txt");
+		if ((fPointer0 = fopen("supplier.txt", "r")) != NULL) {
+			printf("The following is the supplier details for the parts ID [%s]:\n", search.id);
+			for (i = 0; i < lines; i++) {
+				fscanf(fPointer0, "%s%s%s%d", &search.supplier, &search.idValid, &search.phoneNum, &search.quantity);
+				if (strcmp(search.id, search.idValid) == 0) {
+					flag = 1;
+					if (search.quantity > 0) {
+						printf("Supplier Name:%-10s\tContact number:%-15s\n", search.supplier, search.phoneNum);
+						break;
+					}
+				}
+			}
+			if (flag == 0) {
+				printf("No record of this Part ID is available\n");
+				printf("Press enter to go back to menu.\n");
+				_getch();
+				main();
+			}
+		}
+		printf("Press enter to go back to menu.\n");
+		_getch();
+		main();
+	}
+
+	// if user chose 3, the program will proceed to calling main() function
+	else if (search.choice == 3) {
+		main();
+	}
+}
+
+void update() // this functoin is called when user chose 1 in main menu, which is to update quantity of parts
+{
+	void supply();  // delcaration of variables that will be used throughout the function 
+	void give();
+	void main();
+	int stockUp = 0;
+	do {
+
+		// prompt user  to choose to supply stock, acquire stock, or exit the function
+		printf("\n\t\t1.Supply Stock\n\t\t2.Acquire Stock\n\t\t3.Exit\nEnter your option:");
+		scanf("%d", &stockUp); while (getchar() != '\n');
+
+		// if user chose 1, the supplyStock function will be call
+		if (stockUp == 1) {
+			supplyStock();
+			_getch();
+
+		}
+		// if user chose 2, the takeStock function will be call
+		else if (stockUp == 2) {
+			takeStock();
+			_getch();
+
+		}
+
+		// if user chose 3, main function will be call 
+		else if (stockUp == 3) {
+			main();
+		}
+
+		// else the program will show invalid input 
+		else {
+
+			printf("\nInvalid input, please try again.\n");
+		}
+	} while (stockUp != 3);
+}
+
+void main() // main menu function that will be called at the beginnning of the program 
+{
+	int choice = 0; // declaration of variable 
+	do
+	{
+		choice = 0; //reset choice to 0
+
+		// display of the main menu and option for user to enter
+		system("cls");
+		printf("Welcome! What would like to do? (Enter number accordingly)");
+		printf("\n\t\t 1. Parts Quantity Update");
+		printf("\n\t\t 2. Parts Quantity Tracking");
+		printf("\n\t\t 3. Parts ID Searching");
+		printf("\n\t\t 4. Exit");
+		printf("\nEnter Choice:");
+
+		//prompt user for input to choose which feature to use and call function accordingly
+		scanf_s("%d", &choice); while (getchar() != '\n');
+
+		// if the user chose 1, the update function will be call
+		if (choice == 1) {
+			update();
+		}
+
+		// if the user chose 2, the displayQuantity function will be call
+		else if (choice == 2) {
+			displayQuantity();
+		}
+
+		// if the user chose 3, the searchPart function will be call
+		else if (choice == 3) {
+			searchPart();
+		}
+
+		// if the user chose 4, the program will be end
+		else if (choice == 4) {
+			printf("\n\t\tThank you for using the program, have a nice day!\n\n\n");
+			exit(0);
+		}
+	}while (choice != 5);
+}
